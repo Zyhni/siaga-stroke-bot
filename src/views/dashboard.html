@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <title>Dashboard - SiagaStroke</title>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="max-w-5xl mx-auto p-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">SiagaStroke</h1>
+      </div>
+      <div class="flex gap-2">
+        <form method="POST" action="/logout">
+          <button class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700">Logout Dashboard</button>
+        </form>
+        <button id="btnLogoutWa" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500">Logout WhatsApp</button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mt-6">
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow">
+        <h2 class="font-semibold mb-2">WhatsApp Status</h2>
+        <div class="text-sm text-slate-200">
+          <div class="mb-1">State: <span id="state" class="font-mono"></span></div>
+          <div>Message: <span id="message" class="font-mono"></span></div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow">
+        <h2 class="font-semibold mb-3">QR Code</h2>
+        <div class="bg-white rounded-xl p-4 flex items-center justify-center min-h-[280px]">
+          <img id="qr" alt="QR" class="max-w-[260px] w-full h-auto hidden"/>
+          <div id="qrEmpty" class="text-slate-700 text-sm">QR belum tersedia.</div>
+        </div>
+        <p class="text-xs text-slate-400 mt-3">
+          Scan dengan WhatsApp &rarr; Perangkat Tertaut.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-slate-900/70 border border-slate-800 rounded-2xl p-5">
+      <h2 class="font-semibold mb-2">Prosedur Kerja</h2>
+      <ul class="list-disc pl-5 text-sm text-slate-300 space-y-1">
+        <li>1. Buka aplikasi whatsapp di smartphone.</li>
+        <li>2. Buka ikon tambah chat di bagian kanan bawah lalu klik kontak baru/new contact.</li>
+        <li>3. Scan kode QR yang sudah peneliti buat atau masukkan nomor handphone chatbot untuk mendapatkan kontak chatbot di whatsapp.</li>
+        <li>4. Ketik nama bot atau sapa terlebih dahulu menggunakan kata/kalimat apapun.</li>
+        <li>5. Apabila bot sudah menjawab, ketik kata kunci mengenai topik apa yang ingin diketahui.</li>
+        <li>6. Jika sudah mengetik kata kunci yang telah disediakan, tunggu hingga bot mengirimkan jawaban/penjelasan mengenai opsi yang telah diketik dan dipilih sebelumnya.</li>
+      </ul>
+    </div>
+  </div>
+
+<script>
+  const socket = io();
+  const elState = document.getElementById("state");
+  const elMessage = document.getElementById("message");
+  const elQr = document.getElementById("qr");
+  const elQrEmpty = document.getElementById("qrEmpty");
+
+  function render(data) {
+    elState.textContent = data.state || "-";
+    elMessage.textContent = data.message || "-";
+
+    if (data.qrDataUrl) {
+      elQr.src = data.qrDataUrl;
+      elQr.classList.remove("hidden");
+      elQrEmpty.classList.add("hidden");
+    } else {
+      elQr.classList.add("hidden");
+      elQrEmpty.classList.remove("hidden");
+    }
+  }
+
+  socket.on("wa_status", render);
+
+  document.getElementById("btnLogoutWa").addEventListener("click", async () => {
+    if (!confirm("Logout WhatsApp? Nanti QR akan muncul lagi.")) return;
+    const res = await fetch("/api/wa/logout", { method: "POST" });
+    const json = await res.json();
+    if (!json.ok) alert("Gagal logout WA: " + json.error);
+  });
+</script>
+</body>
+</html>
