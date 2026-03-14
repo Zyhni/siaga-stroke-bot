@@ -2,32 +2,53 @@
 import pkg from "whatsapp-web.js";
 const { Client, LocalAuth } = pkg;
 
+function getPuppeteerConfig() {
+  const isLinux = process.platform === "linux";
+  const isWindows = process.platform === "win32";
+
+  const config = {
+    headless: "new",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+      "--no-zygote",
+      "--disable-extensions",
+      "--disable-background-networking",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--disable-features=Translate,BackForwardCache,AcceptCHFrame",
+      "--metrics-recording-only",
+      "--mute-audio",
+      "--no-first-run",
+      "--no-default-browser-check"
+    ]
+  };
+
+  // VPS Linux
+  if (isLinux) {
+    config.executablePath =
+      process.env.CHROME_PATH || "/usr/bin/google-chrome-stable";
+  }
+
+  // Windows lokal:
+  // tidak perlu executablePath, biarkan Puppeteer cari sendiri
+  // kalau mau paksa path Windows, bisa pakai ini:
+  if (isWindows && process.env.CHROME_PATH) {
+    config.executablePath = process.env.CHROME_PATH;
+  }
+
+  return config;
+}
+
 export function createWaManager({ onQR, onStatus, onMessage }) {
   let client = null;
 
   function buildClient() {
     const c = new Client({
       authStrategy: new LocalAuth({ clientId: "siagastroke" }),
-      puppeteer: {
-  headless: "new",
-  executablePath: "/usr/bin/google-chrome-stable",
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-    "--disable-gpu",
-    "--no-zygote",
-    "--disable-extensions",
-    "--disable-background-networking",
-    "--disable-background-timer-throttling",
-    "--disable-renderer-backgrounding",
-    "--disable-features=Translate,BackForwardCache,AcceptCHFrame",
-    "--metrics-recording-only",
-    "--mute-audio",
-    "--no-first-run",
-    "--no-default-browser-check"
-  ]
-}
+      puppeteer: getPuppeteerConfig()
     });
 
     c.on("qr", (qr) => {
@@ -43,13 +64,28 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
       onStatus?.({ state: "change_state", message: String(state) });
     });
 
-    c.on("authenticated", () => onStatus?.({ state: "authenticated", message: "Authenticated" }));
-    c.on("ready", () => onStatus?.({ state: "ready", message: "WhatsApp client siap" }));
-    c.on("auth_failure", (msg) => onStatus?.({ state: "auth_failure", message: String(msg || "Auth failure") }));
-    c.on("disconnected", (reason) => onStatus?.({ state: "disconnected", message: String(reason || "Disconnected") }));
+    c.on("authenticated", () =>
+      onStatus?.({ state: "authenticated", message: "Authenticated" })
+    );
+
+    c.on("ready", () =>
+      onStatus?.({ state: "ready", message: "WhatsApp client siap" })
+    );
+
+    c.on("auth_failure", (msg) =>
+      onStatus?.({ state: "auth_failure", message: String(msg || "Auth failure") })
+    );
+
+    c.on("disconnected", (reason) =>
+      onStatus?.({ state: "disconnected", message: String(reason || "Disconnected") })
+    );
 
     c.on("message", async (msg) => {
-      try { await onMessage?.(msg); } catch (e) { console.error("[WA] onMessage error:", e); }
+      try {
+        await onMessage?.(msg);
+      } catch (e) {
+        console.error("[WA] onMessage error:", e);
+      }
     });
 
     return c;
@@ -65,7 +101,11 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
   async function stop() {
     if (!client) return;
     onStatus?.({ state: "stopping", message: "Stopping WhatsApp client..." });
-    try { await client.destroy(); } catch (e) { console.error("[WA] destroy error:", e); }
+    try {
+      await client.destroy();
+    } catch (e) {
+      console.error("[WA] destroy error:", e);
+    }
     client = null;
   }
 
@@ -77,7 +117,6 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
 
   async function logout() {
     if (!client) {
-      // jika belum ada client, start dulu biar bisa logout dengan aman
       await start();
     }
     try {
@@ -86,7 +125,6 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     } catch (e) {
       console.error("[WA] logout error:", e);
     }
-    // habis logout: restart biar QR muncul lagi
     await restart();
   }
 

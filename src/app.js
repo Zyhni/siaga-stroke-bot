@@ -20,33 +20,18 @@ const io = new Server(server);
 // middleware
 app.use(
   helmet({
-    // biar gak ada header “powerful features” yang ribet di HTTP IP
     crossOriginOpenerPolicy: false,
     originAgentCluster: false,
-
     contentSecurityPolicy: {
-      // ⛔ jangan pakai defaults (karena default bisa nyisipin directive yang bikin submit ke-block)
       useDefaults: false,
       directives: {
         "default-src": ["'self'"],
-
-        // allow tailwind CDN + inline script (dashboard pakai inline)
         "script-src": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
         "script-src-elem": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
-
-        // allow inline css (tailwind inject)
         "style-src": ["'self'", "'unsafe-inline'"],
-
-        // QR dataURL
         "img-src": ["'self'", "data:", "blob:"],
-
-        // socket.io websocket
         "connect-src": ["'self'", "ws:", "wss:"],
-
-        // FORM BOLEH SUBMIT KE ORIGIN SENDIRI
         "form-action": ["'self'"],
-
-        // biar gak auto-upgrade http -> https
         "upgrade-insecure-requests": null,
         "block-all-mixed-content": null
       }
@@ -90,34 +75,63 @@ function calcTypingDelayMs(text) {
   return Math.min(base + len * perChar, max);
 }
 
+// helper aman untuk kirim reply
+async function sendBotReply(msg, reply) {
+  const chat = await msg.getChat();
+  await chat.sendSeen();
+
+  // kalau reply kosong
+  if (!reply) {
+    await msg.reply("Maaf, saya belum memahami pertanyaan Anda.");
+    return;
+  }
+
+  // kalau reply gambar
+  if (reply.media) {
+    await chat.sendStateTyping();
+
+    const delay = 5000;
+    await sleep(delay);
+
+    await chat.clearState();
+
+    await chat.sendMessage(reply.media, {
+      caption: reply.caption || ""
+    });
+
+    return;
+  }
+
+  // kalau reply text
+  const text = reply.text || "Maaf, saya belum memahami pertanyaan Anda.";
+  await chat.sendStateTyping();
+  await sleep(calcTypingDelayMs(text));
+  await chat.clearState();
+  await msg.reply(text);
+}
+
 // WA Manager
 const wa = createWaManager({
   onQR: async (qr) => {
     lastQRDataUrl = await QRCode.toDataURL(qr);
     emitStatus();
   },
+
   onStatus: (st) => {
     waStatus = st;
     emitStatus();
   },
-  onMessage: async (msg) => {
-    const incoming = msg.body || "";
-    const reply = getReplyForMessage(incoming);
 
+  onMessage: async (msg) => {
     try {
-      const chat = await msg.getChat();
-      await chat.sendSeen();
-      await chat.sendStateTyping();
-      await sleep(calcTypingDelayMs(reply.text));
-      await chat.clearState();
-      if (reply.media) {
-        await chat.sendMessage(reply.media, { caption: reply.caption || "" });
-      } else {
-        await msg.reply(reply.text);
-      }
+      const incoming = msg.body || "";
+      const reply = getReplyForMessage(incoming);
+      await sendBotReply(msg, reply);
     } catch (e) {
       console.error("[BOT] reply pipeline error:", e);
-      try { await msg.reply(reply.text); } catch {}
+      try {
+        await msg.reply("Maaf, terjadi kendala saat memproses pesan.");
+      } catch {}
     }
   }
 });
@@ -130,17 +144,21 @@ io.on("connection", (socket) => {
 // routes
 app.get("/", (req, res) => res.redirect("/dashboard"));
 
-app.get("/login", (req, res) => res.sendFile(process.cwd() + "/src/views/login.html"));
+app.get("/login", (req, res) =>
+  res.sendFile(process.cwd() + "/src/views/login.html")
+);
+
 app.post("/login", loginHandler);
 app.post("/logout", logoutHandler);
 
-app.get("/dashboard", requireAuth, (req, res) => res.sendFile(process.cwd() + "/src/views/dashboard.html"));
+app.get("/dashboard", requireAuth, (req, res) =>
+  res.sendFile(process.cwd() + "/src/views/dashboard.html")
+);
 
 app.get("/api/status", requireAuth, (req, res) => {
   res.json({ ...waStatus, qrDataUrl: lastQRDataUrl });
 });
 
-// restart WA tanpa logout (buat kasus authenticated tapi gak ready)
 app.post("/api/wa/restart", requireAuth, async (req, res) => {
   try {
     await wa.restart();
@@ -150,7 +168,6 @@ app.post("/api/wa/restart", requireAuth, async (req, res) => {
   }
 });
 
-// logout WA dan paksa QR muncul lagi
 app.post("/api/wa/logout", requireAuth, async (req, res) => {
   try {
     lastQRDataUrl = null;

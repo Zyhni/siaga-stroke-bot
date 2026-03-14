@@ -17,10 +17,29 @@ const loadMedia = (relativePath) => {
   }
 };
 
-export const MEDIA = {
-  stroke: loadMedia("image/stroke.png")
+// =========================
+// GAMBAR
+// =========================
+export const IMAGE_MEDIA = {
+  stroke_def: loadMedia("image/Apa itu stroke_.jpg"),
+  stroke_symptoms: loadMedia("image/Apa saja gejala stroke_.jpg"),
+  stroke_risks: loadMedia("image/Apa saja faktor risiko stroke_.jpg"),
+  stroke_first_aid: loadMedia("image/Apa yang harus dilakukan jika merasakan gejala-gejala stroke_.jpg"),
+  stroke_prevention: loadMedia("image/Bagaimana cara mencegah stroke terutama pada penderita hipertensi_.jpg"),
+
+  myth_stroke_age: loadMedia("image/Apakah benar stroke hanya menyerang orang tua_.jpg"),
+  myth_need_long_recovery: loadMedia("image/Apakah benar pemulihan stroke membutuhkan waktu yang lama_.jpg"),
+  myth_needles: loadMedia("image/Apakah boleh menusuk jarum pada telinga, jari tangan atau jari kaki saat terjadi stroke_.jpg"),
+  myth_recurrent: loadMedia("image/Apakah stroke bisa kambuh atau berulang_.jpg"),
+  myth_heart_only: loadMedia("image/Apakah stroke hanya terjadi pada penderita_ pasien jantung_.jpg"),
+  myth_full_recovery: loadMedia("image/Bisakah penderita stroke sembuh total_.jpg"),
+  myth_light_vs_heavy: loadMedia("image/Apa perbedaan stroke ringan dan stroke berat_.jpg"),
+  myth_sexual_activity: loadMedia("image/Apakah aktivitas seksual boleh dilakukan oleh penderita stroke_.jpg")
 };
 
+// =========================
+// MENU
+// =========================
 export const MAIN_MENU = [
   { key: "1", title: "Apa itu stroke?", keywords: ["1", "stroke"], handler: "stroke_def" },
   { key: "2", title: "Apa saja gejala stroke?", keywords: ["2", "gejala"], handler: "stroke_symptoms" },
@@ -29,7 +48,10 @@ export const MAIN_MENU = [
   { key: "5", title: "Bagaimana cara mencegah stroke terutama pada penderita hipertensi?", keywords: ["5", "cara mencegah", "pencegahan", "cegah", "mencegah"], handler: "stroke_prevention" }
 ];
 
-// Materi Utama - Jawaban ringkas menu (sesuai dokumen)
+// =========================
+// JAWABAN TEKS CADANGAN
+// kalau gambar gagal dibaca, masih ada fallback text
+// =========================
 export const MAIN_ANSWERS = {
   stroke_def:
 `Stroke adalah kondisi yang terjadi ketika pasokan darah ke otak mengalami gangguan atau berkurang akibat penyumbatan (stroke iskemik) atau pecahnya pembuluh darah (stroke hemoragik). Tanpa pasokan darah, otak tidak akan mendapatkan asupan oksigen dan nutrisi, sehingga sel-sel pada sebagian area otak akan mati. Kondisi ini menyebabkan bagian tubuh yang dikendalikan oleh area otak yang rusak tidak dapat berfungsi dengan baik.`,
@@ -81,7 +103,6 @@ Ketik salah satu kata ini: Alkohol, Detak jantung, Hipertensi, Diabetes, Koleste
 • Kurangi stres`
 };
 
-// Materi Utama - detail per gejala (sub-keyword)
 export const SYMPTOM_DETAILS = {
   "bingung": `Penderita stroke biasanya mengalami penurunan kesadaran yang disebabkan oleh kondisi hipoksia otak akibat sumbatan pembuluh darah atau pecahnya pembuluh darah. Kondisi ini memunculkan gejala bingung pada pasien stroke.`,
   "penglihatan ganda": `Penglihatan ganda adalah kondisi posisi mata tidak fokus pada objek yang sama. Stroke dapat merusak saraf halus yang mengontrol gerakan mata sehingga menyebabkan masalah pada pergerakan mata.`,
@@ -98,7 +119,6 @@ export const SYMPTOM_DETAILS = {
   "masalah koordinasi": `Tremor pada pasien stroke terjadi karena kerusakan pada bagian otak (serebelum) yang membuat gerakan menjadi tidak terkoordinasi.`
 };
 
-// Materi Utama - detail per faktor risiko (sub-keyword)
 export const RISK_DETAILS = {
   "alkohol": `Mengonsumsi alkohol secara berlebihan dapat merusak pembuluh darah serta menaikkan tekanan darah yang dapat memicu stroke.`,
   "detak jantung": `Detak jantung yang tidak teratur bisa membentuk gumpalan darah yang dapat menyumbat pembuluh darah ke otak.`,
@@ -114,35 +134,57 @@ export const RISK_DETAILS = {
   "pembuluh darah": `Pembuluh darah yang sudah menyempit membuat darah mudah tersumbat dan menghambat aliran darah ke otak.`
 };
 
-// Materi Cadangan (tidak muncul di menu), hanya jadi “pelindung”
 export const BACKUP_QA = [
-  { keywords: ["jarum", "tusuk", "menusuk"], answer:
-`Tidak boleh menusukkan jarum pada pasien stroke. Stroke terjadi karena sumbatan atau pecahnya pembuluh darah otak, bukan pembuluh darah tepi. Tusukan bisa menaikkan tekanan darah (memperburuk stroke) dan berisiko infeksi bila tidak steril.` },
+  {
+    key: "myth_needles",
+    keywords: ["jarum", "tusuk", "menusuk"],
+    answer: `Tidak boleh menusukkan jarum pada pasien stroke. Stroke terjadi karena sumbatan atau pecahnya pembuluh darah otak, bukan pembuluh darah tepi. Tusukan bisa menaikkan tekanan darah (memperburuk stroke) dan berisiko infeksi bila tidak steril.`
+  },
+  {
+    key: "myth_heart_only",
+    keywords: ["pasien jantung", "penderita jantung"],
+    answer: `Stroke adalah “brain attack” dan bisa terjadi pada siapa saja. Penderita jantung memang berisiko lebih tinggi, tetapi faktor risiko lain juga banyak seperti hipertensi, diabetes, kolesterol tinggi, obesitas, merokok, dan gaya hidup tidak sehat.`
+  },
+  {
+    key: "myth_stroke_age",
+    keywords: ["orang tua"],
+    answer: `Stroke bisa terjadi pada siapa pun dan usia berapa pun. Saat ini kecenderungan usia pasien stroke bisa lebih muda karena gaya hidup tidak sehat (makanan, kurang olahraga, merokok, alkohol, dll).`
+  },
+  {
+    key: "myth_need_long_recovery",
+    keywords: ["pemulihan", "penyembuhan"],
+    answer: `Pemulihan stroke umumnya membutuhkan waktu. Jika penanganan tidak teratur bisa berakibat cacat permanen. Biasanya perlu rehabilitasi/fisioterapi rutin.`
+  },
+  {
+    key: "myth_full_recovery",
+    keywords: ["sembuh total"],
+    answer: `Bisa, tetapi tergantung kondisi individu, jenis stroke, penanganan, dan rehabilitasi. Umumnya pemulihan butuh waktu cukup panjang.`
+  },
+  {
+    key: "myth_light_vs_heavy",
+    keywords: ["stroke ringan", "stroke berat"],
+    answer: `Perbedaannya dari luas dan lokasi kerusakan otak. Stroke ringan biasanya sumbatan kecil dengan area lebih kecil. Stroke berat biasanya sumbatan/pecah pembuluh darah besar sehingga gejala lebih parah dan bisa menyebabkan kecacatan permanen.`
+  },
+  {
+    key: "myth_recurrent",
+    keywords: ["kambuh", "berulang"],
+    answer: `Pasien yang pernah stroke berisiko mengalami stroke berulang, bahkan bisa lebih parah dari serangan pertama karena luas kerusakan otak bisa bertambah.`
+  },
+  {
+    key: "myth_sexual_activity",
+    keywords: ["seksual", "sex", "seks"],
+    answer: `Aktivitas seksual umumnya boleh dilakukan bertahap. Dengan komunikasi, penyesuaian, konseling/terapi medis, kontrol tekanan darah, dan dukungan keluarga, fungsi seksual dapat membaik walau pemulihan butuh waktu.`
+  },
 
-  { keywords: ["pasien jantung", "penderita jantung"], answer:
-`Stroke adalah “brain attack” dan bisa terjadi pada siapa saja. Penderita jantung memang berisiko lebih tinggi, tetapi faktor risiko lain juga banyak seperti hipertensi, diabetes, kolesterol tinggi, obesitas, merokok, dan gaya hidup tidak sehat.` },
-
-  { keywords: ["tidak bisa dicegah"], answer:
-`Tidak benar. Hampir 80% kejadian stroke bisa dicegah dengan mengendalikan faktor risiko stroke.` },
-
-  { keywords: ["orang tua"], answer:
-`Stroke bisa terjadi pada siapa pun dan usia berapa pun. Saat ini kecenderungan usia pasien stroke bisa lebih muda karena gaya hidup tidak sehat (makanan, kurang olahraga, merokok, alkohol, dll).` },
-
-  { keywords: ["pemulihan", "penyembuhan"], answer:
-`Pemulihan stroke umumnya membutuhkan waktu. Jika penanganan tidak teratur bisa berakibat cacat permanen. Biasanya perlu rehabilitasi/fisioterapi rutin.` },
-
-  { keywords: ["selalu sakit kepala"], answer:
-`Stroke tidak selalu disertai sakit kepala hebat. Sakit kepala hebat lebih sering pada stroke hemoragik (pecah pembuluh darah).` },
-
-  { keywords: ["sembuh total"], answer:
-`Bisa, tetapi tergantung kondisi individu, jenis stroke, penanganan, dan rehabilitasi. Umumnya pemulihan butuh waktu cukup panjang.` },
-
-  { keywords: ["stroke ringan", "stroke berat"], answer:
-`Perbedaannya dari luas dan lokasi kerusakan otak. Stroke ringan biasanya sumbatan kecil dengan area lebih kecil. Stroke berat biasanya sumbatan/pecah pembuluh darah besar sehingga gejala lebih parah dan bisa menyebabkan kecacatan permanen.` },
-
-  { keywords: ["kambuh", "berulang"], answer:
-`Pasien yang pernah stroke berisiko mengalami stroke berulang, bahkan bisa lebih parah dari serangan pertama karena luas kerusakan otak bisa bertambah.` },
-
-  { keywords: ["seksual", "sex", "seks"], answer:
-`Aktivitas seksual umumnya boleh dilakukan bertahap. Dengan komunikasi, penyesuaian, konseling/terapi medis, kontrol tekanan darah, dan dukungan keluarga, fungsi seksual dapat membaik walau pemulihan butuh waktu.` }
+  // yang ini tetap teks karena belum ada gambar
+  {
+    key: "text_preventable",
+    keywords: ["tidak bisa dicegah"],
+    answer: `Tidak benar. Hampir 80% kejadian stroke bisa dicegah dengan mengendalikan faktor risiko stroke.`
+  },
+  {
+    key: "text_headache",
+    keywords: ["selalu sakit kepala"],
+    answer: `Stroke tidak selalu disertai sakit kepala hebat. Sakit kepala hebat lebih sering pada stroke hemoragik (pecah pembuluh darah).`
+  }
 ];
