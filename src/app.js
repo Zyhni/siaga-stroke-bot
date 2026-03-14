@@ -20,15 +20,35 @@ const io = new Server(server);
 // middleware
 app.use(
   helmet({
-    // biar Tailwind CDN + inline script dashboard jalan
+    // biar gak ada header “powerful features” yang ribet di HTTP IP
+    crossOriginOpenerPolicy: false,
+    originAgentCluster: false,
+
     contentSecurityPolicy: {
-      useDefaults: true,
+      // ⛔ jangan pakai defaults (karena default bisa nyisipin directive yang bikin submit ke-block)
+      useDefaults: false,
       directives: {
+        "default-src": ["'self'"],
+
+        // allow tailwind CDN + inline script (dashboard pakai inline)
         "script-src": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
         "script-src-elem": ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
-        "connect-src": ["'self'", "ws:", "wss:"],
+
+        // allow inline css (tailwind inject)
+        "style-src": ["'self'", "'unsafe-inline'"],
+
+        // QR dataURL
         "img-src": ["'self'", "data:", "blob:"],
-        "style-src": ["'self'", "'unsafe-inline'"]
+
+        // socket.io websocket
+        "connect-src": ["'self'", "ws:", "wss:"],
+
+        // FORM BOLEH SUBMIT KE ORIGIN SENDIRI
+        "form-action": ["'self'"],
+
+        // biar gak auto-upgrade http -> https
+        "upgrade-insecure-requests": null,
+        "block-all-mixed-content": null
       }
     }
   })

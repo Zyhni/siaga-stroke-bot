@@ -9,9 +9,25 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     const c = new Client({
       authStrategy: new LocalAuth({ clientId: "siagastroke" }),
       puppeteer: {
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
-      }
+  headless: "new",
+  executablePath: "/usr/bin/google-chrome-stable",
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--no-zygote",
+    "--disable-extensions",
+    "--disable-background-networking",
+    "--disable-background-timer-throttling",
+    "--disable-renderer-backgrounding",
+    "--disable-features=Translate,BackForwardCache,AcceptCHFrame",
+    "--metrics-recording-only",
+    "--mute-audio",
+    "--no-first-run",
+    "--no-default-browser-check"
+  ]
+}
     });
 
     c.on("qr", (qr) => {
