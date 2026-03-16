@@ -39,12 +39,24 @@ function isGreeting(t) {
   return greetings.some((k) => t === k || t.startsWith(k + " "));
 }
 
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function matchAnyKeyword(text, keywords = []) {
   const t = norm(text);
 
-  return keywords.some((k) => {
+  const sortedKeywords = [...keywords].sort((a, b) => {
+    return norm(b).length - norm(a).length;
+  });
+
+  return sortedKeywords.some((k) => {
     const kk = norm(k);
-    return t === kk || t.includes(kk);
+
+    if (t === kk) return true;
+
+    const pattern = new RegExp(`(^|\\s)${escapeRegex(kk)}(\\s|$)`, "i");
+    return pattern.test(t);
   });
 }
 
@@ -77,28 +89,32 @@ export function getReplyForMessage(messageText) {
     return buildTextReply(buildMainMenuText());
   }
 
-  // 2) detail gejala -> tetap teks
-  for (const key of Object.keys(SYMPTOM_DETAILS)) {
-    const nk = norm(key);
-    if (t === nk || t.includes(nk)) {
-      return buildTextReply(
-        `*${titleCase(key)}*\n\n${SYMPTOM_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
-      );
+  // 2) backup / mitos / pertanyaan cadangan
+  // diprioritaskan dulu karena frasanya lebih spesifik
+  for (const qa of BACKUP_QA) {
+    if (matchAnyKeyword(t, qa.keywords)) {
+      const fallbackText =
+        (qa.answer || "Informasi tidak ditemukan.") +
+        "\n\nKetik *menu* untuk kembali.";
+
+      const media = IMAGE_MEDIA?.[qa.key];
+
+      if (media) {
+        return buildMediaReply(media, "");
+      }
+
+      return buildTextReply(fallbackText);
     }
   }
 
-  // 3) detail faktor risiko -> tetap teks
-  for (const key of Object.keys(RISK_DETAILS)) {
-    const nk = norm(key);
-    if (t === nk || t.includes(nk)) {
-      return buildTextReply(
-        `*${titleCase(key)}*\n\n${RISK_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
-      );
-    }
-  }
+  // 3) menu utama
+  const sortedMainMenu = [...MAIN_MENU].sort((a, b) => {
+    const longestA = Math.max(...a.keywords.map((k) => norm(k).length));
+    const longestB = Math.max(...b.keywords.map((k) => norm(k).length));
+    return longestB - longestA;
+  });
 
-  // 4) menu utama (1-5)
-  for (const item of MAIN_MENU) {
+  for (const item of sortedMainMenu) {
     if (matchAnyKeyword(t, item.keywords)) {
       const fallbackText =
         (MAIN_ANSWERS[item.handler] || "Informasi tidak ditemukan.") +
@@ -113,6 +129,13 @@ export function getReplyForMessage(messageText) {
         );
       }
 
+      if (item.handler === "stroke_risks" && media) {
+        return buildMediaReply(
+          media,
+          "Mau tahu lebih lanjut salah satu faktor risikonya?\n\nKetik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah"
+        );
+      }
+
       if (media) {
         return buildMediaReply(media, "");
       }
@@ -121,22 +144,23 @@ export function getReplyForMessage(messageText) {
     }
   }
 
-  // 5) backup / mitos / pertanyaan cadangan
-  for (const qa of BACKUP_QA) {
-    if (matchAnyKeyword(t, qa.keywords)) {
-      const fallbackText =
-        (qa.answer || "Informasi tidak ditemukan.") +
-        "\n\nKetik *menu* untuk kembali.";
+  // 4) detail gejala
+  for (const key of Object.keys(SYMPTOM_DETAILS)) {
+    const nk = norm(key);
+    if (t === nk || t.includes(nk)) {
+      return buildTextReply(
+        `*${titleCase(key)}*\n\n${SYMPTOM_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
+      );
+    }
+  }
 
-      const media = IMAGE_MEDIA?.[qa.key];
-
-      // kalau ada gambar, kirim gambar
-      if (media) {
-        return buildMediaReply(media, "");
-      }
-
-      // kalau tidak ada gambar, tetap teks
-      return buildTextReply(fallbackText);
+  // 5) detail faktor risiko
+  for (const key of Object.keys(RISK_DETAILS)) {
+    const nk = norm(key);
+    if (t === nk || t.includes(nk)) {
+      return buildTextReply(
+        `*${titleCase(key)}*\n\n${RISK_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
+      );
     }
   }
 

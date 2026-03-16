@@ -45,7 +45,22 @@ export const MAIN_MENU = [
   { key: "2", title: "Apa saja gejala stroke?", keywords: ["2", "gejala"], handler: "stroke_symptoms" },
   { key: "3", title: "Apa saja faktor risiko stroke?", keywords: ["3", "faktor risiko", "faktor", "risiko"], handler: "stroke_risks" },
   { key: "4", title: "Apa yang harus dilakukan jika merasakan gejala-gejala stroke?", keywords: ["4", "merasakan gejala stroke"], handler: "stroke_first_aid" },
-  { key: "5", title: "Bagaimana cara mencegah stroke terutama pada penderita hipertensi?", keywords: ["5", "cara mencegah", "pencegahan", "cegah", "mencegah"], handler: "stroke_prevention" }
+  {
+    key: "5",
+    title: "Bagaimana cara mencegah stroke terutama pada penderita hipertensi?",
+    keywords: [
+      "5",
+      "bagaimana cara mencegah stroke terutama pada penderita hipertensi",
+      "cara mencegah stroke pada penderita hipertensi",
+      "mencegah stroke pada penderita hipertensi",
+      "pencegahan stroke pada penderita hipertensi",
+      "cara mencegah",
+      "pencegahan",
+      "cegah",
+      "mencegah"
+    ],
+    handler: "stroke_prevention"
+  }
 ];
 
 // =========================
@@ -88,7 +103,7 @@ Ketik salah satu kata diatas: Bingung, Penglihatan ganda, Lemah, Mati rasa dan l
 10) Penyempitan pembuluh darah
 
 Mau tahu lebih lanjut salah satu faktor risikonya?
-Ketik salah satu kata ini: Alkohol, Detak jantung, Hipertensi, Diabetes, Kolesterol, Aktivitas, Kelebihan berat badan, Obesitas, Jantung, Merokok, Rokok, Pembuluh darah`,
+Ketik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah`,
 
   stroke_first_aid:
 `Apabila merasakan gejala-gejala stroke, jangan menunggu atau berharap gejala akan hilang sendiri. Hubungi RS terdekat atau layanan kesehatan yang tersedia 24 jam. Jika Anda sedang bersama seseorang yang menunjukkan gejala stroke, tetaplah bersama orang tersebut sampai ambulans datang. Catat waktu ketika gejala pertama kali muncul dan berikan informasi ini kepada tenaga medis/kesehatan.`,
@@ -106,7 +121,7 @@ Ketik salah satu kata ini: Alkohol, Detak jantung, Hipertensi, Diabetes, Koleste
 export const SYMPTOM_DETAILS = {
   "bingung": `Penderita stroke biasanya mengalami penurunan kesadaran yang disebabkan oleh kondisi hipoksia otak akibat sumbatan pembuluh darah atau pecahnya pembuluh darah. Kondisi ini memunculkan gejala bingung pada pasien stroke.`,
   "penglihatan ganda": `Penglihatan ganda adalah kondisi posisi mata tidak fokus pada objek yang sama. Stroke dapat merusak saraf halus yang mengontrol gerakan mata sehingga menyebabkan masalah pada pergerakan mata.`,
-  "lemah": `Stroke membuat aliran darah terhenti dan apabila menyerang bagian otak yang mengatur pergerakan tubuh, bagian tersebut rusak sehingga sinyal ke otot berkurang/hilang.`,
+  "lemah": `Stroke membuat aliran darah terhenti dan apabila menyerang bagian otak yang mengatur pergerakan tubuh, bagian tersebut akan rusak sehingga sinyal ke otot berkurang/hilang.`,
   "mati rasa": `Stroke dapat merusak bagian otak yang mengatur gerakan wajah sehingga sinyal ke otot wajah terputus sehingga satu sisi wajah melemah. Gejala ini membuat seseorang cenderung sering kesulitan atau tersedak untuk minum.`,
   "keseimbangan": `Jika stroke terjadi pada otak kecil atau batang otak (area yang mengontrol keseimbangan), kehilangan keseimbangan dapat terjadi.`,
   "terjatuh": `Jika stroke terjadi pada otak kecil atau batang otak (area yang mengontrol keseimbangan), kehilangan keseimbangan dapat terjadi.`,
@@ -175,8 +190,6 @@ export const BACKUP_QA = [
     keywords: ["seksual", "sex", "seks"],
     answer: `Aktivitas seksual umumnya boleh dilakukan bertahap. Dengan komunikasi, penyesuaian, konseling/terapi medis, kontrol tekanan darah, dan dukungan keluarga, fungsi seksual dapat membaik walau pemulihan butuh waktu.`
   },
-
-  // yang ini tetap teks karena belum ada gambar
   {
     key: "text_preventable",
     keywords: ["tidak bisa dicegah"],
@@ -185,6 +198,6 @@ export const BACKUP_QA = [
   {
     key: "text_headache",
     keywords: ["selalu sakit kepala"],
-    answer: `Stroke tidak selalu disertai sakit kepala hebat. Sakit kepala hebat lebih sering pada stroke hemoragik (pecah pembuluh darah).`
+    answer: `Stroke tidak selalu disertai sakit kepala hebat. Terdapat 2 tipe stroke yaitu stroke hemoragik (pecah pembuluh darah) dan stroke iskemik (adanya sumbatan pada pembuluh darah). Sakit kepala hebat biasanya merupakan ciri dari stroke hemoragik.`
   }
 ];
