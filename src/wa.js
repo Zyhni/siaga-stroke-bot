@@ -7,7 +7,7 @@ function getPuppeteerConfig() {
   const isWindows = process.platform === "win32";
 
   const config = {
-    headless: "new",
+    headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -26,15 +26,11 @@ function getPuppeteerConfig() {
     ]
   };
 
-  // VPS Linux
   if (isLinux) {
     config.executablePath =
       process.env.CHROME_PATH || "/usr/bin/google-chrome-stable";
   }
 
-  // Windows lokal:
-  // tidak perlu executablePath, biarkan Puppeteer cari sendiri
-  // kalau mau paksa path Windows, bisa pakai ini:
   if (isWindows && process.env.CHROME_PATH) {
     config.executablePath = process.env.CHROME_PATH;
   }
@@ -44,6 +40,55 @@ function getPuppeteerConfig() {
 
 export function createWaManager({ onQR, onStatus, onMessage }) {
   let client = null;
+
+  // simpan pesan yang sudah diproses berdasarkan ID
+  const processedMessageIds = new Set();
+
+  // simpan pesan terakhir berdasarkan kombinasi nomor + isi pesan
+  // ini dipakai untuk mencegah duplicate event dari WhatsApp saat chat baru pertama kali masuk
+  const recentMessages = new Map();
+
+  function markProcessed(id) {
+    if (!id) return;
+
+    processedMessageIds.add(id);
+
+    // batasi biar tidak numpuk terus
+    if (processedMessageIds.size > 1000) {
+      const first = processedMessageIds.values().next().value;
+      processedMessageIds.delete(first);
+    }
+  }
+
+  function isProcessed(id) {
+    if (!id) return false;
+    return processedMessageIds.has(id);
+  }
+
+  function isDuplicateMessage(msg) {
+    const body = (msg.body || "").trim().toLowerCase();
+    const from = msg.from || "";
+    const key = `${from}|${body}`;
+    const now = Date.now();
+
+    const lastTime = recentMessages.get(key);
+
+    // kalau pesan yang sama masuk dalam 5 detik, anggap duplicate
+    if (lastTime && now - lastTime < 5000) {
+      return true;
+    }
+
+    recentMessages.set(key, now);
+
+    // cleanup agar map tidak membesar terus
+    for (const [k, t] of recentMessages.entries()) {
+      if (now - t > 60000) {
+        recentMessages.delete(k);
+      }
+    }
+
+    return false;
+  }
 
   function buildClient() {
     const c = new Client({
@@ -61,27 +106,33 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     });
 
     c.on("change_state", (state) => {
-      onStatus?.({ state: "change_state", message: String(state) });
+            onStatus?.({ state: "change_state", message: String(state) });
     });
 
-    c.on("authenticated", () =>
-      onStatus?.({ state: "authenticated", message: "Authenticated" })
-    );
+    c.on("authenticated", () => {
+      onStatus?.({ state: "authenticated", message: "Authenticated" });
+    });
 
-    c.on("ready", () =>
-      onStatus?.({ state: "ready", message: "WhatsApp client siap" })
-    );
+    c.on("ready", () => {
+      onStatus?.({ state: "ready", message: "WhatsApp client siap" });
+      console.log("[WA] client ready");
+    });
 
-    c.on("auth_failure", (msg) =>
-      onStatus?.({ state: "auth_failure", message: String(msg || "Auth failure") })
-    );
+    c.on("auth_failure", (msg) => {
+      onStatus?.({ state: "auth_failure", message: String(msg || "Auth failure") });
+    });
 
-    c.on("disconnected", (reason) =>
-      onStatus?.({ state: "disconnected", message: String(reason || "Disconnected") })
-    );
+    c.on("disconnected", (reason) => {
+      onStatus?.({ state: "disconnected", message: String(reason || "Disconnected") });
+    });
 
     c.on("message", async (msg) => {
       try {
+        const state = await c.getState().catch(() => null);
+        if (state !== "CONNECTED") {
+          console.warn("[WA] Pesan diterima tapi state bukan CONNECTED:", state, "— pesan diabaikan.");
+          return;
+        }
         await onMessage?.(msg);
       } catch (e) {
         console.error("[WA] onMessage error:", e);
@@ -89,7 +140,7 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     });
 
     return c;
-  }
+      }
 
   async function start() {
     if (client) return;
@@ -122,7 +173,7 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     try {
       onStatus?.({ state: "logging_out", message: "Logging out WhatsApp..." });
       await client.logout();
-    } catch (e) {
+         } catch (e) {
       console.error("[WA] logout error:", e);
     }
     await restart();

@@ -81,7 +81,7 @@ function buildMediaReply(media, caption = "") {
   return { media, caption };
 }
 
-export function getReplyForMessage(messageText) {
+export async function getReplyForMessage(messageText) {
   const t = norm(messageText);
 
   // 1) greet / menu
@@ -90,19 +90,13 @@ export function getReplyForMessage(messageText) {
   }
 
   // 2) backup / mitos / pertanyaan cadangan
-  // diprioritaskan dulu karena frasanya lebih spesifik
   for (const qa of BACKUP_QA) {
     if (matchAnyKeyword(t, qa.keywords)) {
       const fallbackText =
         (qa.answer || "Informasi tidak ditemukan.") +
         "\n\nKetik *menu* untuk kembali.";
-
       const media = IMAGE_MEDIA?.[qa.key];
-
-      if (media) {
-        return buildMediaReply(media, "");
-      }
-
+      if (media) return buildMediaReply(media, "");
       return buildTextReply(fallbackText);
     }
   }
@@ -119,27 +113,15 @@ export function getReplyForMessage(messageText) {
       const fallbackText =
         (MAIN_ANSWERS[item.handler] || "Informasi tidak ditemukan.") +
         "\n\nKetik *menu* untuk kembali.";
-
       const media = IMAGE_MEDIA?.[item.handler];
 
       if (item.handler === "stroke_symptoms" && media) {
-        return buildMediaReply(
-          media,
-          "Mau tahu lebih lanjut salah satu gejalanya?\n\nKetik salah satu kata diatas: Bingung, Penglihatan ganda, Lemah, Mati rasa dan lainnya"
-        );
+        return buildMediaReply(media, "Mau tahu lebih lanjut salah satu gejalanya?\n\nKetik salah satu kata diatas: Bingung, Penglihatan ganda, Lemah, Mati rasa dan lainnya");
       }
-
       if (item.handler === "stroke_risks" && media) {
-        return buildMediaReply(
-          media,
-          "Mau tahu lebih lanjut salah satu faktor risikonya?\n\nKetik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah"
-        );
+        return buildMediaReply(media, "Mau tahu lebih lanjut salah satu faktor risikonya?\n\nKetik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah");
       }
-
-      if (media) {
-        return buildMediaReply(media, "");
-      }
-
+      if (media) return buildMediaReply(media, "");
       return buildTextReply(fallbackText);
     }
   }
@@ -148,9 +130,7 @@ export function getReplyForMessage(messageText) {
   for (const key of Object.keys(SYMPTOM_DETAILS)) {
     const nk = norm(key);
     if (t === nk || t.includes(nk)) {
-      return buildTextReply(
-        `*${titleCase(key)}*\n\n${SYMPTOM_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
-      );
+      return buildTextReply(`*${titleCase(key)}*\n\n${SYMPTOM_DETAILS[key]}\n\nKetik *menu* untuk kembali.`);
     }
   }
 
@@ -158,14 +138,41 @@ export function getReplyForMessage(messageText) {
   for (const key of Object.keys(RISK_DETAILS)) {
     const nk = norm(key);
     if (t === nk || t.includes(nk)) {
-      return buildTextReply(
-        `*${titleCase(key)}*\n\n${RISK_DETAILS[key]}\n\nKetik *menu* untuk kembali.`
-      );
+      return buildTextReply(`*${titleCase(key)}*\n\n${RISK_DETAILS[key]}\n\nKetik *menu* untuk kembali.`);
     }
   }
 
-  // 6) fallback
-  return buildTextReply(
-    "Maaf, saya belum paham. Ketik *menu* untuk melihat pilihan materi utama."
-  );
+  try {
+    const systemPrompt = `Anda adalah asisten AI khusus edukasi kesehatan dan medis. 
+ATURAN MUTLAK YANG HARUS ANDA PATUHI:
+1. Anda HANYA boleh merespons pembahasan seputar kesehatan, medis, penyakit, atau gaya hidup sehat.
+2. Jika pengguna bertanya hal di LUAR TOPIK kesehatan (misalnya teknologi, politik, cuaca, ngobrol santai dll), TOLAK DENGAN SOPAN dan katakan: "Maaf, saya hanya diprogram untuk menjawab pertanyaan seputar topik kesehatan."
+3. Setiap kali Anda memberikan informasi kesehatan, Anda WAJIB menyertakan "Sumber Fakta:" di akhir paragraf yang berisi referensi atau alasan medis yang valid.
+
+Pertanyaan dari pengguna: "${messageText}"`;
+
+    const apiKey = process.env.FERDEV_API_KEY
+    const response = await fetch("https://api.ferdev.my.id/ai/gemini", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        prompt: systemPrompt
+      })
+    });
+
+    const data = await response.json();
+    if (data && data.success && data.message) {
+      return buildTextReply(data.message);
+    } else {
+      throw new Error(data.message || JSON.stringify(data));
+    }
+  } catch (error) {
+    console.error("[BOT] Gemini API error:", error.message);
+    return buildTextReply(
+      "Maaf, saya belum memahami pertanyaan Anda dan layanan AI saat ini sedang sibuk. Ketik *menu* untuk melihat pilihan materi utama."
+    );
+  }
 }

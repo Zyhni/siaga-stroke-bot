@@ -37,7 +37,7 @@ app.use(
       }
     }
   })
-);
+  );
 
 app.use(compression());
 app.use(express.urlencoded({ extended: true }));
@@ -73,13 +73,10 @@ function calcTypingDelayMs(text) {
   const perChar = 35;
   const max = 6000;
   return Math.min(base + len * perChar, max);
-}
+  }
 
 // helper aman untuk kirim reply
 async function sendBotReply(msg, reply) {
-  const chat = await msg.getChat();
-  await chat.sendSeen();
-
   // kalau reply kosong
   if (!reply) {
     await msg.reply("Maaf, saya belum memahami pertanyaan Anda.");
@@ -88,27 +85,17 @@ async function sendBotReply(msg, reply) {
 
   // kalau reply gambar
   if (reply.media) {
-    await chat.sendStateTyping();
-
-    const delay = 5000;
-    await sleep(delay);
-
-    await chat.clearState();
-
-    await chat.sendMessage(reply.media, {
-      caption: reply.caption || ""
-    });
-
+    await sleep(3000); // simulasi jeda sebelum kirim
+    await msg.reply(reply.media, undefined, { caption: reply.caption || "" });
     return;
   }
 
-  // kalau reply text
+  // kalau reply text — simulasi typing dengan sleep
   const text = reply.text || "Maaf, saya belum memahami pertanyaan Anda.";
-  await chat.sendStateTyping();
   await sleep(calcTypingDelayMs(text));
-  await chat.clearState();
   await msg.reply(text);
 }
+
 
 // WA Manager
 const wa = createWaManager({
@@ -125,7 +112,10 @@ const wa = createWaManager({
   onMessage: async (msg) => {
     try {
       const incoming = msg.body || "";
-      const reply = getReplyForMessage(incoming);
+      
+      // TAMBAHKAN 'await' DISINI KARENA FUNGSI SEKARANG ASYNC
+      const reply = await getReplyForMessage(incoming); 
+      
       await sendBotReply(msg, reply);
     } catch (e) {
       console.error("[BOT] reply pipeline error:", e);
@@ -160,7 +150,7 @@ app.get("/api/status", requireAuth, (req, res) => {
 });
 
 app.post("/api/wa/restart", requireAuth, async (req, res) => {
-  try {
+    try {
     await wa.restart();
     res.json({ ok: true });
   } catch (e) {
