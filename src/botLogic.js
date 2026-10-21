@@ -142,37 +142,8 @@ export async function getReplyForMessage(messageText) {
     }
   }
 
-  try {
-    const systemPrompt = `Anda adalah asisten AI khusus edukasi kesehatan dan medis. 
-ATURAN MUTLAK YANG HARUS ANDA PATUHI:
-1. Anda HANYA boleh merespons pembahasan seputar kesehatan, medis, penyakit, atau gaya hidup sehat.
-2. Jika pengguna bertanya hal di LUAR TOPIK kesehatan (misalnya teknologi, politik, cuaca, ngobrol santai dll), TOLAK DENGAN SOPAN dan katakan: "Maaf, saya hanya diprogram untuk menjawab pertanyaan seputar topik kesehatan."
-3. Setiap kali Anda memberikan informasi kesehatan, Anda WAJIB menyertakan "Sumber Fakta:" di akhir paragraf yang berisi referensi atau alasan medis yang valid.
-
-Pertanyaan dari pengguna: "${messageText}"`;
-
-    const apiKey = process.env.FERDEV_API_KEY
-    const response = await fetch("https://api.ferdev.my.id/ai/gemini", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        prompt: systemPrompt
-      })
-    });
-
-    const data = await response.json();
-    if (data && data.success && data.message) {
-      return buildTextReply(data.message);
-    } else {
-      throw new Error(data.message || JSON.stringify(data));
-    }
-  } catch (error) {
-    console.error("[BOT] Gemini API error:", error.message);
-    return buildTextReply(
-      "Maaf, saya belum memahami pertanyaan Anda dan layanan AI saat ini sedang sibuk. Ketik *menu* untuk melihat pilihan materi utama."
-    );
-  }
+  // Fallback: pesan tidak dikenali
+  return buildTextReply(
+    "Maaf, saya belum memahami pertanyaan Anda. Ketik *menu* untuk melihat pilihan materi utama."
+  );
 }

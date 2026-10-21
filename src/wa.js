@@ -22,7 +22,10 @@ function getPuppeteerConfig() {
       "--metrics-recording-only",
       "--mute-audio",
       "--no-first-run",
-      "--no-default-browser-check"
+      "--no-default-browser-check",
+      "--disable-accelerated-2d-canvas",
+      "--disable-ipc-flooding-protection",
+      "--disable-component-update"
     ]
   };
 
@@ -93,7 +96,10 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
   function buildClient() {
     const c = new Client({
       authStrategy: new LocalAuth({ clientId: "siagastroke" }),
-      puppeteer: getPuppeteerConfig()
+      puppeteer: getPuppeteerConfig(),
+      webVersionCache: {
+        type: "none"
+      }
     });
 
     c.on("qr", (qr) => {
@@ -102,19 +108,19 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     });
 
     c.on("loading_screen", (percent, message) => {
-      onStatus?.({ state: "loading", message: `${percent}% - ${message}` });
+      onStatus?.({ state: "loading", message: `Loading ${percent}% — ${message}` });
     });
 
     c.on("change_state", (state) => {
-            onStatus?.({ state: "change_state", message: String(state) });
+      onStatus?.({ state: "change_state", message: String(state) });
     });
 
     c.on("authenticated", () => {
-      onStatus?.({ state: "authenticated", message: "Authenticated" });
+      onStatus?.({ state: "authenticated", message: "Authenticated — memuat data WhatsApp..." });
     });
 
     c.on("ready", () => {
-      onStatus?.({ state: "ready", message: "WhatsApp client siap" });
+      onStatus?.({ state: "ready", message: "✅ WhatsApp client siap menerima pesan!" });
       console.log("[WA] client ready");
     });
 
@@ -140,7 +146,7 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     });
 
     return c;
-      }
+  }
 
   async function start() {
     if (client) return;
@@ -173,7 +179,7 @@ export function createWaManager({ onQR, onStatus, onMessage }) {
     try {
       onStatus?.({ state: "logging_out", message: "Logging out WhatsApp..." });
       await client.logout();
-         } catch (e) {
+    } catch (e) {
       console.error("[WA] logout error:", e);
     }
     await restart();

@@ -26,6 +26,7 @@ export const IMAGE_MEDIA = {
   stroke_risks: loadMedia("image/Apa saja faktor risiko stroke_.jpg"),
   stroke_first_aid: loadMedia("image/Apa yang harus dilakukan jika merasakan gejala-gejala stroke_.jpg"),
   stroke_prevention: loadMedia("image/Bagaimana cara mencegah stroke terutama pada penderita hipertensi_.jpg"),
+  stroke_behavior: loadMedia("image/Perilaku.jpg"),
 
   myth_stroke_age: loadMedia("image/Apakah benar stroke hanya menyerang orang tua_.jpg"),
   myth_need_long_recovery: loadMedia("image/Apakah benar pemulihan stroke membutuhkan waktu yang lama_.jpg"),
@@ -60,6 +61,18 @@ export const MAIN_MENU = [
       "mencegah"
     ],
     handler: "stroke_prevention"
+  },
+  {
+    key: "6",
+    title: "Bagaimana menerapkan perilaku pencegahan stroke?",
+    keywords: [
+      "6",
+      "bagaimana menerapkan perilaku pencegahan stroke",
+      "perilaku pencegahan stroke",
+      "perilaku sehat",
+      "perilaku"
+    ],
+    handler: "stroke_behavior"
   }
 ];
 
@@ -115,7 +128,10 @@ Ketik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabe
 • Pola diet sehat (buah, sayur, susu rendah/tanpa lemak)
 • Aktivitas fisik sedang–berat minimal 150 menit/minggu (jalan cepat, bersepeda, resistensi, berkebun)
 • Jika obesitas, targetkan penurunan berat badan
-• Kurangi stres`
+• Kurangi stres`,
+
+  stroke_behavior:
+`Menerapkan perilaku pencegahan stroke dapat dilakukan dengan menjaga pola hidup sehat, rutin berolahraga, mengelola stres, dan mengontrol tekanan darah serta minum obat secara teratur.`
 };
 
 export const SYMPTOM_DETAILS = {
@@ -199,5 +215,10 @@ export const BACKUP_QA = [
     key: "text_headache",
     keywords: ["selalu sakit kepala"],
     answer: `Stroke tidak selalu disertai sakit kepala hebat. Terdapat 2 tipe stroke yaitu stroke hemoragik (pecah pembuluh darah) dan stroke iskemik (adanya sumbatan pada pembuluh darah). Sakit kepala hebat biasanya merupakan ciri dari stroke hemoragik.`
+  },
+  {
+    key: "text_medication",
+    keywords: ["obat", "minum obat", "obat hipertensi", "pengobatan"],
+    answer: `Minumlah obat hipertensi secara rutin sesuai anjuran dokter dan lakukan pemeriksaan kesehatan secara berkala di Puskesmas atau fasilitas pelayanan kesehatan terdekat.`
   }
 ];

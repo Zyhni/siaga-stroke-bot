@@ -16,6 +16,6 @@
     "helmet": "^7.1.0",
     "qrcode": "^1.5.4",
     "socket.io": "^4.7.5",
-    "whatsapp-web.js": "^1.27.0"
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main"
   }
 }
