@@ -60,6 +60,38 @@ function matchAnyKeyword(text, keywords = []) {
   });
 }
 
+function findBestMenuMatch(text, menuList) {
+  const t = norm(text);
+  let bestItem = null;
+  let bestScore = -1;
+
+  for (const item of menuList) {
+    for (const rawKw of item.keywords) {
+      const kk = norm(rawKw);
+      if (!kk) continue;
+
+      let score = -1;
+      if (t === kk) {
+        // Exact match gets highest priority, scaled by length
+        score = 1000 + kk.length;
+      } else {
+        const pattern = new RegExp(`(^|\\s)${escapeRegex(kk)}(\\s|$)`, "i");
+        if (pattern.test(t)) {
+          // Substring word match gets score based on matched keyword length
+          score = kk.length;
+        }
+      }
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestItem = item;
+      }
+    }
+  }
+
+  return bestItem;
+}
+
 export function buildMainMenuText() {
   const lines = [
     "Halo! Saya *SiagaStroke*.",
@@ -101,29 +133,28 @@ export async function getReplyForMessage(messageText) {
     }
   }
 
-  // 3) menu utama
-  const sortedMainMenu = [...MAIN_MENU].sort((a, b) => {
-    const longestA = Math.max(...a.keywords.map((k) => norm(k).length));
-    const longestB = Math.max(...b.keywords.map((k) => norm(k).length));
-    return longestB - longestA;
-  });
+  // 3) menu utama (pilih yang paling spesifik / paling cocok)
+  const matchedMenu = findBestMenuMatch(t, MAIN_MENU);
+  if (matchedMenu) {
+    const fallbackText =
+      (MAIN_ANSWERS[matchedMenu.handler] || "Informasi tidak ditemukan.") +
+      "\n\nKetik *menu* untuk kembali.";
+    const media = IMAGE_MEDIA?.[matchedMenu.handler];
 
-  for (const item of sortedMainMenu) {
-    if (matchAnyKeyword(t, item.keywords)) {
-      const fallbackText =
-        (MAIN_ANSWERS[item.handler] || "Informasi tidak ditemukan.") +
-        "\n\nKetik *menu* untuk kembali.";
-      const media = IMAGE_MEDIA?.[item.handler];
-
-      if (item.handler === "stroke_symptoms" && media) {
-        return buildMediaReply(media, "Mau tahu lebih lanjut salah satu gejalanya?\n\nKetik salah satu kata diatas: Bingung, Penglihatan ganda, Lemah, Mati rasa dan lainnya");
-      }
-      if (item.handler === "stroke_risks" && media) {
-        return buildMediaReply(media, "Mau tahu lebih lanjut salah satu faktor risikonya?\n\nKetik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah");
-      }
-      if (media) return buildMediaReply(media, "");
-      return buildTextReply(fallbackText);
+    if (matchedMenu.handler === "stroke_symptoms" && media) {
+      return buildMediaReply(
+        media,
+        "Mau tahu lebih lanjut salah satu gejalanya?\n\nKetik salah satu kata diatas: Bingung, Penglihatan ganda, Lemah, Mati rasa dan lainnya"
+      );
     }
+    if (matchedMenu.handler === "stroke_risks" && media) {
+      return buildMediaReply(
+        media,
+        "Mau tahu lebih lanjut salah satu faktor risikonya?\n\nKetik salah satu kata diatas, seperti: Alkohol, detak jantung, hipertensi, diabetes, kolesterol, aktivitas, obesitas, jantung, merokok/rokok, pembuluh darah"
+      );
+    }
+    if (media) return buildMediaReply(media, "");
+    return buildTextReply(fallbackText);
   }
 
   // 4) detail gejala

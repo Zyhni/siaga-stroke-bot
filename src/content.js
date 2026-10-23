@@ -42,10 +42,54 @@ export const IMAGE_MEDIA = {
 // MENU
 // =========================
 export const MAIN_MENU = [
-  { key: "1", title: "Apa itu stroke?", keywords: ["1", "stroke"], handler: "stroke_def" },
-  { key: "2", title: "Apa saja gejala stroke?", keywords: ["2", "gejala"], handler: "stroke_symptoms" },
-  { key: "3", title: "Apa saja faktor risiko stroke?", keywords: ["3", "faktor risiko", "faktor", "risiko"], handler: "stroke_risks" },
-  { key: "4", title: "Apa yang harus dilakukan jika merasakan gejala-gejala stroke?", keywords: ["4", "merasakan gejala stroke"], handler: "stroke_first_aid" },
+  {
+    key: "1",
+    title: "Apa itu stroke?",
+    keywords: ["1", "apa itu stroke", "definisi stroke", "pengertian stroke", "tentang stroke", "stroke"],
+    handler: "stroke_def"
+  },
+  {
+    key: "2",
+    title: "Apa saja gejala stroke?",
+    keywords: [
+      "2",
+      "apa saja gejala stroke",
+      "gejala stroke",
+      "ciri ciri stroke",
+      "ciri stroke",
+      "tanda stroke",
+      "tanda tanda stroke",
+      "gejala"
+    ],
+    handler: "stroke_symptoms"
+  },
+  {
+    key: "3",
+    title: "Apa saja faktor risiko stroke?",
+    keywords: [
+      "3",
+      "apa saja faktor risiko stroke",
+      "faktor risiko stroke",
+      "faktor risiko",
+      "faktor",
+      "risiko"
+    ],
+    handler: "stroke_risks"
+  },
+  {
+    key: "4",
+    title: "Apa yang harus dilakukan jika merasakan gejala-gejala stroke?",
+    keywords: [
+      "4",
+      "apa yang harus dilakukan jika merasakan gejala stroke",
+      "apa yang harus dilakukan jika merasakan gejala gejala stroke",
+      "merasakan gejala stroke",
+      "merasakan gejala",
+      "pertolongan pertama stroke",
+      "pertolongan pertama"
+    ],
+    handler: "stroke_first_aid"
+  },
   {
     key: "5",
     title: "Bagaimana cara mencegah stroke terutama pada penderita hipertensi?",
@@ -55,6 +99,8 @@ export const MAIN_MENU = [
       "cara mencegah stroke pada penderita hipertensi",
       "mencegah stroke pada penderita hipertensi",
       "pencegahan stroke pada penderita hipertensi",
+      "cara mencegah stroke",
+      "mencegah stroke",
       "cara mencegah",
       "pencegahan",
       "cegah",
@@ -68,6 +114,7 @@ export const MAIN_MENU = [
     keywords: [
       "6",
       "bagaimana menerapkan perilaku pencegahan stroke",
+      "menerapkan perilaku pencegahan stroke",
       "perilaku pencegahan stroke",
       "perilaku sehat",
       "perilaku"
